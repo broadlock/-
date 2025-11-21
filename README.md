@@ -166,3 +166,268 @@ int main() {
     return 0;
 }
 ```
+
+
+
+
+
+
+
+Tima:
+```c
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include <float.h>
+
+#define M_PI 3.14159265358979323846
+
+// Функция вычисления f(x)
+double f(double x) {
+    if (x < 0) {
+        // f(x) = (cos x - 1)/x для x < 0
+        return (cos(x) - 1) / x;
+    }
+    else if (x >= 0 && x < 1) {
+        // f(x) = ln(x) / ∛x для 0 ≤ x < 1
+        if (x == 0) {
+            return NAN; // Неопределено при x=0
+        }
+        return log(x) / pow(x, 1.0/3.0);
+    }
+    else {
+        // f(x) = Σ(x^n / arctan(n+1)) для n=0..8 при x ≥ 1
+        double sum = 0.0;
+        for (int n = 0; n <= 8; n++) {
+            sum += pow(x, n) / atan(n + 1);
+        }
+        return sum;
+    }
+}
+
+// Вычисление значения функции в точке
+void calculate_value() {
+    double x;
+    printf("Введите x: ");
+    if (scanf("%lf", &x) != 1) {
+        printf("Ошибка: некорректный ввод!\n");
+        while (getchar() != '\n'); // Очистка буфера
+        return;
+    }
+    
+    double result = f(x);
+    if (isnan(result)) {
+        printf("f(%.2f) не определена\n", x);
+    } else {
+        printf("f(%.2f) = %.6f\n", x, result);
+    }
+}
+
+// Вывод таблицы значений
+void print_table() {
+    double start, end, step;
+    printf("Введите начало интервала: ");
+    if (scanf("%lf", &start) != 1) {
+        printf("Ошибка ввода!\n");
+        return;
+    }
+    printf("Введите конец интервала: ");
+    if (scanf("%lf", &end) != 1) {
+        printf("Ошибка ввода!\n");
+        return;
+    }
+    printf("Введите шаг: ");
+    if (scanf("%lf", &step) != 1 || step <= 0) {
+        printf("Ошибка: шаг должен быть положительным!\n");
+        return;
+    }
+    
+    printf("\n   x        f(x)\n");
+    printf("-------------------\n");
+    
+    for (double x = start; x <= end; x += step) {
+        double result = f(x);
+        if (isnan(result)) {
+            printf("%6.2f    не определена\n", x);
+        } else {
+            printf("%6.2f    %10.6f\n", x, result);
+        }
+    }
+}
+
+// Вычисление интеграла методом трапеций
+void calculate_integral() {
+    double a, b;
+    int n;
+    
+    printf("Введите нижний предел a: ");
+    if (scanf("%lf", &a) != 1) {
+        printf("Ошибка ввода!\n");
+        return;
+    }
+    printf("Введите верхний предел b: ");
+    if (scanf("%lf", &b) != 1) {
+        printf("Ошибка ввода!\n");
+        return;
+    }
+    printf("Введите количество разбиений: ");
+    if (scanf("%d", &n) != 1 || n <= 0) {
+        printf("Ошибка: количество разбиений должно быть положительным!\n");
+        return;
+    }
+    
+    if (a >= b) {
+        printf("Ошибка: a должно быть меньше b!\n");
+        return;
+    }
+    
+    double h = (b - a) / n;
+    double sum = 0.0;
+    int valid_points = 0;
+    
+    for (int i = 0; i <= n; i++) {
+        double x = a + i * h;
+        double fx = f(x);
+        
+        if (!isnan(fx)) {
+            if (i == 0 || i == n) {
+                sum += fx / 2.0;
+            } else {
+                sum += fx;
+            }
+            valid_points++;
+        }
+    }
+    
+    if (valid_points < 2) {
+        printf("Недостаточно точек для вычисления интеграла!\n");
+        return;
+    }
+    
+    double integral = sum * h;
+    printf("∫f(x)dx от %.2f до %.2f = %.6f\n", a, b, integral);
+}
+
+// Поиск x: f(x) ≥ Y
+void find_x_greater_than_y() {
+    double Y;
+    printf("Введите Y: ");
+    if (scanf("%lf", &Y) != 1) {
+        printf("Ошибка ввода!\n");
+        return;
+    }
+    
+    double start, end, step;
+    printf("Введите начало поиска: ");
+    if (scanf("%lf", &start) != 1) {
+        printf("Ошибка ввода!\n");
+        return;
+    }
+    printf("Введите конец поиска: ");
+    if (scanf("%lf", &end) != 1) {
+        printf("Ошибка ввода!\n");
+        return;
+    }
+    printf("Введите шаг поиска: ");
+    if (scanf("%lf", &step) != 1 || step <= 0) {
+        printf("Ошибка: шаг должен быть положительным!\n");
+        return;
+    }
+    
+    printf("\nТочки, где f(x) ≥ %.2f:\n", Y);
+    printf("   x        f(x)\n");
+    printf("-------------------\n");
+    
+    int found = 0;
+    for (double x = start; x <= end; x += step) {
+        double result = f(x);
+
+if (!isnan(result) && result >= Y) {
+            printf("%6.2f    %10.6f\n", x, result);
+            found = 1;
+        }
+    }
+    
+    if (!found) {
+        printf("Точки не найдены в заданном диапазоне\n");
+    }
+}
+
+// Вычисление производной в точке
+void calculate_derivative() {
+    double x;
+    printf("Введите x: ");
+    if (scanf("%lf", &x) != 1) {
+        printf("Ошибка ввода!\n");
+        return;
+    }
+    
+    double h = 1e-8; // Малое приращение
+    double f1 = f(x + h);
+    double f2 = f(x - h);
+    
+    if (isnan(f1) || isnan(f2)) {
+        printf("Производная в точке %.2f не может быть вычислена\n", x);
+        return;
+    }
+    
+    double derivative = (f1 - f2) / (2 * h);
+    printf("f'(%.2f) = %.6f\n", x, derivative);
+}
+
+// Главное меню
+void print_menu() {
+    printf("\n=== АНАЛИЗ ФУНКЦИИ ===\n");
+    printf("1. Значение функции в точке\n");
+    printf("2. Таблица значений на интервале\n");
+    printf("3. Вычисление определенного интеграла\n");
+    printf("4. Поиск x: f(x) ≥ Y\n");
+    printf("5. Производная в точке\n");
+    printf("6. Выход\n");
+    printf("Выберите операцию: ");
+}
+
+int main() {
+    int choice;
+    
+    printf("Программа анализа функции:\n");
+    printf("f(x) = (cos x - 1)/x, x < 0\n");
+    printf("f(x) = ln(x)/∛x, 0 ≤ x < 1\n");
+    printf("f(x) = Σ(x^n/arctan(n+1)), x ≥ 1\n");
+    
+    while (1) {
+        print_menu();
+        
+        if (scanf("%d", &choice) != 1) {
+            printf("Ошибка: введите число от 1 до 6!\n");
+            while (getchar() != '\n'); // Очистка буфера
+            continue;
+        }
+        
+        switch (choice) {
+            case 1:
+                calculate_value();
+                break;
+            case 2:
+                print_table();
+                break;
+            case 3:
+                calculate_integral();
+                break;
+            case 4:
+                find_x_greater_than_y();
+                break;
+            case 5:
+                calculate_derivative();
+                break;
+            case 6:
+                printf("Выход из программы...\n");
+                return 0;
+            default:
+                printf("Ошибка: выберите число от 1 до 6!\n");
+        }
+    }
+    
+    return 0;
+}
+```
